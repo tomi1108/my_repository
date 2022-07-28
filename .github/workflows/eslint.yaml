@@ -1,6 +1,8 @@
 name: ESLint
 on:
-  - pull_request
+  pull_request:
+    branches:
+      - main
 jobs:
   ESLint:
     runs-on: ubuntu-latest
