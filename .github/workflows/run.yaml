@@ -1,7 +1,61 @@
-name: learn-github-actions
-on: [push]
+name: Pull_Request
+
+on:
+  pull_request:
+    branches:
+      - main
+
 jobs:
-  check-bats-version:
+  test_job:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.TOKEN }}
+    steps:
+      - name: Setup Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: '3.8.x'
+      
+      - name: Configures AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.REGION }}
+          
+      - name: Get Actions
+        uses: actions/checkout@v2
+        with:
+            repository: username/repo
+          token: ${{ secrets.TOKEN }}
+          ref: main
+      
+      - name: Run Test
+        run: pytest
+      
+      - name: Get Actions From Another Repository
+        uses: actions/checkout@v2
+        with:
+            repository: username/repo
+          token: ${{ secrets.TOKEN }}
+          ref: main
+      
+      - name: Run Test 2 of another repository
+        run: |
+          cd another_repo
+          pytest
+    
+  deploy:
+    needs: [test_job]
     runs-on: ubuntu-latest
     steps:
-      - run: echo "this is pen"
+      - name: Get Actions
+        uses: actions/checkout@v2
+        with:
+            repository: username/repo
+          token: ${{ secrets.TOKEN }}
+          ref: main
+      - name: Get Actions
+        run: |
+          cd deploy_items
+          bash deploy.sh
